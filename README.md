@@ -178,13 +178,17 @@ See `prisma/schema.prisma` for full definitions.
 
 ---
 
-## 🧭 Roadmap ideas
+## 🧭 Roadmap
 
-- File attachments via S3/Azure Blob
-- Email/Telegram digest of weekly progress
-- Per-project Gantt view
-- Replace heuristic brain-dump parser with full LLM call
-- Real WebSocket activity feed
+The next-cycle features are fully designed in [docs/ROADMAP.md](docs/ROADMAP.md):
+
+1. File attachments via S3 / Azure Blob (presigned uploads)
+2. Telegram digest of weekly progress
+3. Per-project Gantt view
+4. Replace heuristic brain-dump parser with structured LLM output
+5. Real WebSocket / SSE activity feed
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for schemas, APIs, RBAC, env vars, and step-by-step implementation plans.
 
 ---
 
