@@ -1,0 +1,149 @@
+// Project Hub data model
+// Default provider is SQLite for easy Pi/local deployment.
+// To use PostgreSQL: change provider to "postgresql" and update DATABASE_URL.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  passwordHash  String
+  role          String    @default("CONTRIBUTOR") // ADMIN | MANAGER | CONTRIBUTOR | VIEWER
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+
+  managedProjects   Project[]      @relation("ProjectManager")
+  memberships       ProjectMember[]
+  assignedFeatures  Feature[]      @relation("FeatureAssignee")
+  comments          Comment[]
+  activities        Activity[]
+  brainDumps        BrainDump[]
+}
+
+model PhaseTemplate {
+  // Reusable global phase template that admins manage in settings
+  id        String   @id @default(cuid())
+  name      String
+  order     Int
+  required  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  status       String    @default("ACTIVE") // ACTIVE | ARCHIVED
+  managerId    String?
+  manager      User?     @relation("ProjectManager", fields: [managerId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  phases       Phase[]
+  members      ProjectMember[]
+  activities   Activity[]
+  brainDumps   BrainDump[]
+}
+
+model ProjectMember {
+  id         String  @id @default(cuid())
+  projectId  String
+  userId     String
+  roleInProject String @default("CONTRIBUTOR") // ADMIN | MANAGER | CONTRIBUTOR | VIEWER (project-scoped)
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model Phase {
+  id         String   @id @default(cuid())
+  projectId  String
+  name       String
+  order      Int
+  required   Boolean  @default(true)
+  weight     Int      @default(1) // for weighted completion (MVP defaults to 1)
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  features   Feature[]
+
+  @@index([projectId, order])
+}
+
+model Feature {
+  id            String   @id @default(cuid())
+  phaseId       String
+  title         String
+  description   String?
+  status        String   @default("NOT_STARTED") // NOT_STARTED | IN_PROGRESS | BLOCKED | IN_REVIEW | COMPLETED
+  priority      String   @default("MEDIUM")     // LOW | MEDIUM | HIGH | CRITICAL
+  completion    Int      @default(0)            // 0..100
+  weight        Int      @default(1)
+  assigneeId    String?
+  dueDate       DateTime?
+  tags          String?  // comma-separated for SQLite simplicity
+  link          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  phase     Phase     @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  assignee  User?     @relation("FeatureAssignee", fields: [assigneeId], references: [id])
+  comments  Comment[]
+  activities Activity[]
+
+  @@index([phaseId])
+  @@index([assigneeId])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  featureId  String
+  authorId   String
+  body       String
+  createdAt  DateTime @default(now())
+
+  feature  Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  author   User    @relation(fields: [authorId], references: [id])
+}
+
+model Activity {
+  id         String   @id @default(cuid())
+  projectId  String?
+  featureId  String?
+  actorId    String?
+  type       String   // CREATE | UPDATE | DELETE | COMMENT | STATUS_CHANGE | ASSIGN | NOTE
+  message    String
+  createdAt  DateTime @default(now())
+
+  project  Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  feature  Feature? @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  actor    User?    @relation(fields: [actorId], references: [id])
+
+  @@index([projectId, createdAt])
+}
+
+model BrainDump {
+  id         String   @id @default(cuid())
+  authorId   String
+  projectId  String?
+  rawText    String
+  proposedTitle       String?
+  proposedDescription String?
+  proposedPhaseId     String?
+  status     String   @default("PROPOSED") // PROPOSED | ACCEPTED | REJECTED
+  createdAt  DateTime @default(now())
+
+  author   User     @relation(fields: [authorId], references: [id])
+  project  Project? @relation(fields: [projectId], references: [id])
+}
+
+model Setting {
+  key   String @id
+  value String
+}

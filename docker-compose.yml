@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    image: sujuva/project-hub:latest
+    container_name: project-hub
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "file:/data/dev.db"
+      SESSION_SECRET: "${SESSION_SECRET:-please-change-me-to-32-plus-chars-minimum}"
+      SEED_ADMIN_EMAIL: "${SEED_ADMIN_EMAIL:-admin@sujuva.local}"
+      SEED_ADMIN_PASSWORD: "${SEED_ADMIN_PASSWORD:-admin123}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      OPENAI_MODEL: "${OPENAI_MODEL:-gpt-4o-mini}"
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN:-}"
+      TELEGRAM_WEBHOOK_URL: "${TELEGRAM_WEBHOOK_URL:-}"
+      TELEGRAM_WEBHOOK_SECRET: "${TELEGRAM_WEBHOOK_SECRET:-}"
+    volumes:
+      - hub-data:/data
+    # Run migrations + seed on each container start (idempotent)
+    command: >
+      sh -c "npx prisma migrate deploy &&
+             node prisma/seed.js || npx tsx prisma/seed.ts || true;
+             node server.js"
+
+  # Optional Postgres backend - uncomment and switch DATABASE_URL/provider to use
+  # db:
+  #   image: postgres:16-alpine
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_PASSWORD: hubpass
+  #     POSTGRES_USER: hub
+  #     POSTGRES_DB: projecthub
+  #   volumes:
+  #     - hub-pg:/var/lib/postgresql/data
+
+volumes:
+  hub-data:
+  # hub-pg:
