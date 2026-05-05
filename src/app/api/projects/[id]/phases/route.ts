@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth';
 import { canEditProject, canViewProject } from '@/lib/rbac';
 import { recordActivity } from '@/lib/activityBus';
-import { handleError } from '../../route';
+import { handleError } from '@/lib/apiError';
 
 const phaseSchema = z.object({
   name: z.string().min(1),

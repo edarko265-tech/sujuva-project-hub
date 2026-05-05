@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "prisma generate && prisma migrate deploy && next build",
-    "start": "next start -p 3000",
+    "postbuild": "cp -r public .next/standalone/ 2>/dev/null || true; mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/ 2>/dev/null || true",
+    "start": "node .next/standalone/server.js",
     "lint": "next lint",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
@@ -19,7 +20,7 @@
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
     "iron-session": "^8.0.4",
-    "next": "14.2.15",
+    "next": "^14.2.33",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "zod": "^3.23.8"

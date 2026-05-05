@@ -2,6 +2,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProgressBar } from '@/components/ProgressBar';
+import { FeatureAttachments } from '@/components/FeatureAttachments';
 
 type Role = 'ADMIN' | 'MANAGER' | 'CONTRIBUTOR' | 'VIEWER';
 interface User { id: string; name: string; email: string }
@@ -169,6 +170,12 @@ export function ProjectDetailClient({
                             {!editable && <span className="text-slate-400">View only</span>}
                           </div>
                         </div>
+                        <FeatureAttachments
+                          featureId={f.id}
+                          canEdit={editable}
+                          currentUserId={currentUserId}
+                          isAdmin={currentRole === 'ADMIN'}
+                        />
                       </div>
                     );
                   })}

@@ -5,7 +5,7 @@ import { requireUser } from '@/lib/auth';
 import { canEditProject, canViewProject } from '@/lib/rbac';
 import { getProjectWithProgress } from '@/lib/completion';
 import { recordActivity } from '@/lib/activityBus';
-import { handleError } from '../route';
+import { handleError } from '@/lib/apiError';
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   try {

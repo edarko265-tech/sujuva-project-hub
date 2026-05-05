@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireRole, requireUser, AuthError } from '@/lib/auth';
 import { getProjectWithProgress } from '@/lib/completion';
 import { recordActivity } from '@/lib/activityBus';
+import { handleError } from '@/lib/apiError';
 
 export async function GET() {
   try {
@@ -61,12 +62,4 @@ export async function POST(req: Request) {
   } catch (e) {
     return handleError(e);
   }
-}
-
-export function handleError(e: unknown) {
-  if (e instanceof AuthError) return NextResponse.json({ error: e.message }, { status: e.status });
-  if (e instanceof z.ZodError) return NextResponse.json({ error: 'Validation', issues: e.issues }, { status: 400 });
-  // eslint-disable-next-line no-console
-  console.error(e);
-  return NextResponse.json({ error: 'Internal error' }, { status: 500 });
 }

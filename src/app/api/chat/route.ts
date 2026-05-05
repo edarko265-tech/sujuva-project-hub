@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth';
 import { chat, type ChatMessage } from '@/lib/ai';
 import { getProjectWithProgress } from '@/lib/completion';
-import { handleError } from '../projects/route';
+import { handleError } from '@/lib/apiError';
 
 const schema = z.object({
   messages: z.array(z.object({

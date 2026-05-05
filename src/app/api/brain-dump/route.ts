@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth';
 import { brainDumpToProposal } from '@/lib/ai';
 import { recordActivity } from '@/lib/activityBus';
-import { handleError } from '../projects/route';
+import { handleError } from '@/lib/apiError';
 
 const schema = z.object({
   rawText: z.string().min(3),

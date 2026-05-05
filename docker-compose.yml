@@ -18,6 +18,10 @@ services:
       TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN:-}"
       TELEGRAM_WEBHOOK_URL: "${TELEGRAM_WEBHOOK_URL:-}"
       TELEGRAM_WEBHOOK_SECRET: "${TELEGRAM_WEBHOOK_SECRET:-}"
+      STORAGE_BACKEND: "${STORAGE_BACKEND:-local}"
+      STORAGE_LOCAL_DIR: "/data/uploads"
+      UPLOAD_MAX_MB: "${UPLOAD_MAX_MB:-25}"
+      UPLOAD_ALLOWED_MIME: "${UPLOAD_ALLOWED_MIME:-}"
     volumes:
       - hub-data:/data
     # Run migrations + seed on each container start (idempotent)

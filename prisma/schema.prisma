@@ -25,6 +25,7 @@ model User {
   comments          Comment[]
   activities        Activity[]
   brainDumps        BrainDump[]
+  attachments       Attachment[]
 }
 
 model PhaseTemplate {
@@ -96,6 +97,7 @@ model Feature {
   assignee  User?     @relation("FeatureAssignee", fields: [assigneeId], references: [id])
   comments  Comment[]
   activities Activity[]
+  attachments Attachment[]
 
   @@index([phaseId])
   @@index([assigneeId])
@@ -110,6 +112,7 @@ model Comment {
 
   feature  Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
   author   User    @relation(fields: [authorId], references: [id])
+  attachments Attachment[]
 }
 
 model Activity {
@@ -141,6 +144,35 @@ model BrainDump {
 
   author   User     @relation(fields: [authorId], references: [id])
   project  Project? @relation(fields: [projectId], references: [id])
+  attachments Attachment[]
+}
+
+model Attachment {
+  id          String   @id @default(cuid())
+  // Polymorphic owner (exactly one set)
+  featureId   String?
+  commentId   String?
+  brainDumpId String?
+
+  uploaderId  String
+  filename    String
+  mimeType    String
+  sizeBytes   Int
+  storageKey  String
+  backend     String   // "s3" | "azure" | "local"
+  status      String   @default("PENDING") // PENDING | READY | DELETED
+  checksum    String?
+  createdAt   DateTime @default(now())
+
+  uploader    User       @relation(fields: [uploaderId], references: [id])
+  feature     Feature?   @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  comment     Comment?   @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  brainDump   BrainDump? @relation(fields: [brainDumpId], references: [id], onDelete: Cascade)
+
+  @@index([featureId])
+  @@index([commentId])
+  @@index([brainDumpId])
+  @@index([status])
 }
 
 model Setting {

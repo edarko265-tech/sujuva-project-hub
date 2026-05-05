@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth';
 import { canEditProject } from '@/lib/rbac';
-import { handleError } from '../../projects/route';
+import { handleError } from '@/lib/apiError';
 
 const patchSchema = z.object({
   name: z.string().min(1).optional(),
