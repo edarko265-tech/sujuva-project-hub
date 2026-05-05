@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth';
 import { canEditProject, canViewProject } from '@/lib/rbac';
+import { recordActivity } from '@/lib/activityBus';
 import { handleError } from '../../route';
 
 const phaseSchema = z.object({
@@ -44,8 +45,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         weight: data.weight ?? 1,
       },
     });
-    await prisma.activity.create({
-      data: { projectId: params.id, actorId: session.userId, type: 'CREATE', message: `Phase "${phase.name}" added.` },
+    await recordActivity({
+      projectId: params.id,
+      actorId: session.userId,
+      actorName: session.name,
+      type: 'CREATE',
+      message: `Phase "${phase.name}" added.`,
     });
     return NextResponse.json(phase, { status: 201 });
   } catch (e) { return handleError(e); }

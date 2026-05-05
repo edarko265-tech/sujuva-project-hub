@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { getProjectWithProgress } from '@/lib/completion';
 import { ProgressBar } from '@/components/ProgressBar';
+import { RecentActivityFeed } from '@/components/RecentActivityFeed';
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -65,20 +66,15 @@ export default async function DashboardPage() {
             </Link>
           ))}
         </div>
-        <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-2">Recent activity</h2>
-          <div className="card divide-y">
-            {recent.length === 0 && <div className="p-4 text-sm text-slate-500">Nothing yet.</div>}
-            {recent.map((a) => (
-              <div key={a.id} className="p-3 text-sm">
-                <div className="text-slate-700">{a.message}</div>
-                <div className="text-xs text-slate-400 mt-0.5">
-                  {a.actor?.name ?? 'system'} · {new Date(a.createdAt).toLocaleString()}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <RecentActivityFeed
+          max={8}
+          initial={recent.map((a) => ({
+            id: a.id,
+            message: a.message,
+            createdAt: a.createdAt.toISOString(),
+            actorName: a.actor?.name ?? null,
+          }))}
+        />
       </section>
     </div>
   );

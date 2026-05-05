@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireRole, requireUser, AuthError } from '@/lib/auth';
 import { getProjectWithProgress } from '@/lib/completion';
+import { recordActivity } from '@/lib/activityBus';
 
 export async function GET() {
   try {
@@ -49,8 +50,12 @@ export async function POST(req: Request) {
         phases: { create: templates.map((t) => ({ name: t.name, order: t.order, required: t.required })) },
       },
     });
-    await prisma.activity.create({
-      data: { projectId: project.id, actorId: session.userId, type: 'CREATE', message: `Project "${project.name}" created.` },
+    await recordActivity({
+      projectId: project.id,
+      actorId: session.userId,
+      actorName: session.name,
+      type: 'CREATE',
+      message: `Project "${project.name}" created.`,
     });
     return NextResponse.json(project, { status: 201 });
   } catch (e) {

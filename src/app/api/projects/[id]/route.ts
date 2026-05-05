@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth';
 import { canEditProject, canViewProject } from '@/lib/rbac';
 import { getProjectWithProgress } from '@/lib/completion';
+import { recordActivity } from '@/lib/activityBus';
 import { handleError } from '../route';
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
@@ -33,8 +34,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
     const data = patchSchema.parse(await req.json());
     const updated = await prisma.project.update({ where: { id: params.id }, data });
-    await prisma.activity.create({
-      data: { projectId: params.id, actorId: session.userId, type: 'UPDATE', message: 'Project updated.' },
+    await recordActivity({
+      projectId: params.id,
+      actorId: session.userId,
+      actorName: session.name,
+      type: 'UPDATE',
+      message: 'Project updated.',
     });
     return NextResponse.json(updated);
   } catch (e) { return handleError(e); }
