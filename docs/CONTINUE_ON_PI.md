@@ -53,7 +53,7 @@ nano .env
 npm ci --no-audit --no-fund
 npx prisma generate
 npx prisma migrate deploy        # use 'deploy' (not 'dev') in production
-npm run prisma:seed              # creates admin@sujuva.local / admin123 — change immediately
+npm run db:seed                  # creates admin@sujuva.local / admin123 — change immediately
 ```
 
 > If the device doesn't have enough RAM for `next build` (Pi 4 with 4 GB
