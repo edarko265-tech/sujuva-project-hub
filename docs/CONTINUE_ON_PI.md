@@ -5,10 +5,10 @@ Use this **after** you have:
 - SSH access (`ssh pi@sujuva-pi.local` or similar)
 - The repo pushed to GitHub on branch `feat/sse-activity-stream` (or merged to `main`)
 
-> **Architecture note:** All app code is portable Node.js/Next.js with SQLite —
-> no native deps that struggle on ARM. Bcrypt, Prisma, and `better-sqlite3`
-> all ship arm64 prebuilds. Expect first-run install ≈ 3–5 min on a Pi 5,
-> 6–10 min on a Pi 4.
+> **Architecture note:** All app code is portable Node.js/Next.js using
+> Prisma with SQLite and `bcryptjs` — no `better-sqlite3` dependency in the
+> current repo. This stack is generally ARM-friendly; expect first-run install
+> ≈ 3–5 min on a Pi 5, 6–10 min on a Pi 4.
 
 ---
 
