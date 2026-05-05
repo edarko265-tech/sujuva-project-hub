@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth';
 import { canEditProject } from '@/lib/rbac';
 import { recordActivity } from '@/lib/activityBus';
-import { handleError } from '../../../projects/route';
+import { handleError } from '@/lib/apiError';
 
 const featureSchema = z.object({
   title: z.string().min(1),

@@ -15,6 +15,9 @@ dist
 prisma/migrations/dev.db*
 prisma/dev.db*
 
+# Local-driver attachment storage
+uploads/
+
 # Logs
 *.log
 npm-debug.log*

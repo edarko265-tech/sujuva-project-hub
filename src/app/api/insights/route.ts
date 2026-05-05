@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth';
 import { getProjectWithProgress, phaseCompletion } from '@/lib/completion';
-import { handleError } from '../projects/route';
+import { handleError } from '@/lib/apiError';
 
 export async function GET() {
   try {

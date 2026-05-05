@@ -3,7 +3,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth';
-import { handleError } from '../../projects/route';
+import { handleError } from '@/lib/apiError';
 
 const patchSchema = z.object({
   name: z.string().min(1).optional(),

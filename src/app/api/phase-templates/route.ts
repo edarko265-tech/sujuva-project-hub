@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth';
-import { handleError } from '../projects/route';
+import { handleError } from '@/lib/apiError';
 
 export async function GET() {
   try {
