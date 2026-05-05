@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth';
 import { canEditFeature } from '@/lib/rbac';
+import { recordActivity } from '@/lib/activityBus';
 import { handleError } from '../../projects/route';
 
 const patchSchema = z.object({
@@ -37,14 +38,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (data.status && data.status !== before.status) changes.push(`status → ${data.status}`);
     if (data.completion != null && data.completion !== before.completion) changes.push(`progress → ${data.completion}%`);
     if (data.assigneeId !== undefined && data.assigneeId !== before.assigneeId) changes.push('reassigned');
-    await prisma.activity.create({
-      data: {
-        projectId: before.phase.projectId,
-        featureId: feature.id,
-        actorId: session.userId,
-        type: 'UPDATE',
-        message: `Feature "${feature.title}" updated${changes.length ? ': ' + changes.join(', ') : ''}.`,
-      },
+    await recordActivity({
+      projectId: before.phase.projectId,
+      featureId: feature.id,
+      actorId: session.userId,
+      actorName: session.name,
+      type: data.status && data.status !== before.status ? 'STATUS_CHANGE' : 'UPDATE',
+      message: `Feature "${feature.title}" updated${changes.length ? ': ' + changes.join(', ') : ''}.`,
     });
     return NextResponse.json(feature);
   } catch (e) { return handleError(e); }
@@ -74,14 +74,13 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const comment = await prisma.comment.create({
       data: { featureId: params.id, authorId: session.userId, body: data.body },
     });
-    await prisma.activity.create({
-      data: {
-        projectId: feature.phase.projectId,
-        featureId: feature.id,
-        actorId: session.userId,
-        type: 'COMMENT',
-        message: `New comment on "${feature.title}".`,
-      },
+    await recordActivity({
+      projectId: feature.phase.projectId,
+      featureId: feature.id,
+      actorId: session.userId,
+      actorName: session.name,
+      type: 'COMMENT',
+      message: `New comment on "${feature.title}".`,
     });
     return NextResponse.json(comment, { status: 201 });
   } catch (e) { return handleError(e); }

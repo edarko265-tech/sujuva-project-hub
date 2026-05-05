@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth';
 import { brainDumpToProposal } from '@/lib/ai';
+import { recordActivity } from '@/lib/activityBus';
 import { handleError } from '../projects/route';
 
 const schema = z.object({
@@ -62,8 +63,13 @@ export async function PATCH(req: Request) {
       },
     });
     await prisma.brainDump.update({ where: { id }, data: { status: 'ACCEPTED', projectId: phase.projectId } });
-    await prisma.activity.create({
-      data: { projectId: phase.projectId, featureId: feature.id, actorId: session.userId, type: 'CREATE', message: 'Brain-dump accepted as feature.' },
+    await recordActivity({
+      projectId: phase.projectId,
+      featureId: feature.id,
+      actorId: session.userId,
+      actorName: session.name,
+      type: 'CREATE',
+      message: 'Brain-dump accepted as feature.',
     });
     return NextResponse.json(feature);
   } catch (e) { return handleError(e); }

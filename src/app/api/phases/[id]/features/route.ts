@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth';
 import { canEditProject } from '@/lib/rbac';
+import { recordActivity } from '@/lib/activityBus';
 import { handleError } from '../../../projects/route';
 
 const featureSchema = z.object({
@@ -40,8 +41,13 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         link: data.link ?? null,
       },
     });
-    await prisma.activity.create({
-      data: { projectId: phase.projectId, featureId: feature.id, actorId: session.userId, type: 'CREATE', message: `Feature "${feature.title}" created.` },
+    await recordActivity({
+      projectId: phase.projectId,
+      featureId: feature.id,
+      actorId: session.userId,
+      actorName: session.name,
+      type: 'CREATE',
+      message: `Feature "${feature.title}" created.`,
     });
     return NextResponse.json(feature, { status: 201 });
   } catch (e) { return handleError(e); }
