@@ -24,7 +24,19 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const HEARTBEAT_MS = 25_000;
-const MAX_CLIENTS = Number(process.env.ACTIVITY_STREAM_MAX_CLIENTS ?? 200);
+
+const rawMaxClients = Number(process.env.ACTIVITY_STREAM_MAX_CLIENTS);
+const MAX_CLIENTS =
+  Number.isFinite(rawMaxClients) && rawMaxClients > 0 ? rawMaxClients : 200;
+
+if (!Number.isFinite(rawMaxClients) || rawMaxClients <= 0) {
+  // Warn once at module init if the configured cap is invalid
+  console.warn(
+    'Invalid ACTIVITY_STREAM_MAX_CLIENTS value "%s"; defaulting to %d',
+    process.env.ACTIVITY_STREAM_MAX_CLIENTS,
+    MAX_CLIENTS,
+  );
+}
 
 function sse(event: string, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
