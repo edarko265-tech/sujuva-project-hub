@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireUser } from '@/lib/auth';
-import { brainDumpToProposal } from '@/lib/ai';
+import { proposeFromBrainDump } from '@/lib/ai';
 import { recordActivity } from '@/lib/activityBus';
 import { handleError } from '@/lib/apiError';
 
@@ -16,16 +16,45 @@ export async function POST(req: Request) {
     const session = await requireUser();
     if (session.role === 'VIEWER') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const data = schema.parse(await req.json());
-    const proposal = brainDumpToProposal(data.rawText);
+
+    const where = session.role === 'ADMIN'
+      ? {}
+      : { OR: [{ managerId: session.userId }, { members: { some: { userId: session.userId } } }] };
+    const accessibleProjects = await prisma.project.findMany({
+      where,
+      select: { id: true, name: true, phases: { select: { id: true, name: true }, orderBy: { order: 'asc' } } },
+    });
+
+    const proposal = await proposeFromBrainDump(data.rawText, {
+      accessibleProjects,
+    });
+
+    const projectId = data.projectId
+      ?? (proposal.projectId && accessibleProjects.some((p) => p.id === proposal.projectId) ? proposal.projectId : null);
+    const project = projectId ? accessibleProjects.find((p) => p.id === projectId) : null;
+    const proposedPhaseId = proposal.phaseId && project?.phases.some((ph) => ph.id === proposal.phaseId)
+      ? proposal.phaseId
+      : null;
+
     const dump = await prisma.brainDump.create({
       data: {
         authorId: session.userId,
-        projectId: data.projectId ?? null,
+        projectId,
         rawText: data.rawText,
         proposedTitle: proposal.title,
         proposedDescription: proposal.description,
+        proposedPhaseId,
       },
     });
+
+    await recordActivity({
+      projectId: projectId ?? null,
+      actorId: session.userId,
+      actorName: session.name,
+      type: 'NOTE',
+      message: `Brain-dump captured${proposal.source === 'openai' ? ' (AI refined)' : ''}.`,
+    });
+
     return NextResponse.json(dump, { status: 201 });
   } catch (e) { return handleError(e); }
 }

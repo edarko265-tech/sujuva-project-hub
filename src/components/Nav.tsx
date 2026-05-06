@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Logo } from './Logo';
+import { LiveNotifications } from './LiveNotifications';
 import type { Role } from '@/lib/auth';
 
 interface Props { role: Role; name: string }
@@ -30,6 +31,7 @@ export function Nav({ role, name }: Props) {
           ))}
         </nav>
         <div className="flex items-center gap-3">
+          <LiveNotifications />
           <div className="text-right hidden sm:block">
             <div className="text-sm font-semibold text-brand-ink">{name}</div>
             <div className="text-[10px] uppercase tracking-wider text-slate-500">{role}</div>

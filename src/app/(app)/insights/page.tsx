@@ -1,9 +1,12 @@
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { ProgressBar } from '@/components/ProgressBar';
+import { ProjectOverviewCharts } from '@/components/ProjectOverviewCharts';
 
 interface Insights {
   totals: { projects: number; features: number; completed: number; inProgress: number; blocked: number; overdue: number };
+  statusBreakdown: Array<{ label: string; value: number; color: string }>;
+  completionByProject: Array<{ project: string; completion: number }>;
   blockedFeatures: Array<{ id: string; title: string; projectName?: string }>;
   overdueFeatures: Array<{ id: string; title: string; dueDate: string; projectName?: string }>;
   progressByPhase: Array<{ project: string; phases: Array<{ name: string; completion: number }> }>;
@@ -37,6 +40,20 @@ async function loadInsights(): Promise<Insights | null> {
       blocked: allFeatures.filter((f) => f.status === 'BLOCKED').length,
       overdue: allFeatures.filter((f) => f.dueDate && f.status !== 'COMPLETED' && new Date(f.dueDate).getTime() < now).length,
     },
+    statusBreakdown: [
+      { label: 'Completed', value: allFeatures.filter((f) => f.status === 'COMPLETED').length, color: 'bg-green-500' },
+      { label: 'In Progress', value: allFeatures.filter((f) => f.status === 'IN_PROGRESS').length, color: 'bg-blue-500' },
+      { label: 'Blocked', value: allFeatures.filter((f) => f.status === 'BLOCKED').length, color: 'bg-red-500' },
+      { label: 'In Review', value: allFeatures.filter((f) => f.status === 'IN_REVIEW').length, color: 'bg-amber-500' },
+      { label: 'Not Started', value: allFeatures.filter((f) => f.status === 'NOT_STARTED').length, color: 'bg-slate-400' },
+    ],
+    completionByProject: projects.map((p) => {
+      const features = p.phases.flatMap((ph) => ph.features);
+      const completion = features.length === 0
+        ? 0
+        : Math.round(features.reduce((s, f) => s + f.completion, 0) / features.length);
+      return { project: p.name, completion };
+    }),
     blockedFeatures: allFeatures.filter((f) => f.status === 'BLOCKED').map((f) => ({ id: f.id, title: f.title, projectName: f.projectName })),
     overdueFeatures: allFeatures.filter((f) => f.dueDate && f.status !== 'COMPLETED' && new Date(f.dueDate).getTime() < now)
       .map((f) => ({ id: f.id, title: f.title, dueDate: (f.dueDate as Date).toISOString(), projectName: f.projectName })),
@@ -90,6 +107,11 @@ export default async function InsightsPage() {
           </div>
         ))}
       </div>
+
+      <ProjectOverviewCharts
+        status={data.statusBreakdown}
+        completionByProject={data.completionByProject}
+      />
 
       <section className="grid lg:grid-cols-2 gap-4">
         <div className="card p-4">
