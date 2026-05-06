@@ -36,6 +36,6 @@ export async function POST(req: Request) {
       role: session.role,
       accessibleProjects: accessible,
     });
-    return NextResponse.json({ reply });
+    return NextResponse.json({ reply, mode: process.env.OPENAI_API_KEY ? 'openai' : 'mock' });
   } catch (e) { return handleError(e); }
 }

@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth';
 import { handleError } from '@/lib/apiError';
+import { isAllowedEmail, emailDomainErrorMessage } from '@/lib/emailDomains';
 
 export async function GET() {
   try {
@@ -17,7 +18,10 @@ export async function GET() {
 }
 
 const createSchema = z.object({
-  email: z.string().email(),
+  email: z
+    .string()
+    .email()
+    .refine((v) => isAllowedEmail(v), { message: emailDomainErrorMessage() }),
   name: z.string().min(1),
   password: z.string().min(6),
   role: z.enum(['ADMIN', 'MANAGER', 'CONTRIBUTOR', 'VIEWER']),

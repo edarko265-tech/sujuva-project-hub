@@ -9,6 +9,7 @@ export function ChatClient() {
   ]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [mode, setMode] = useState<'openai' | 'mock'>('mock');
 
   async function send() {
     if (!input.trim()) return;
@@ -21,12 +22,21 @@ export function ChatClient() {
     });
     setBusy(false);
     const data = await res.json().catch(() => ({}));
-    if (res.ok) setMessages([...next, { role: 'assistant', content: data.reply }]);
+    if (res.ok) {
+      setMode(data.mode === 'openai' ? 'openai' : 'mock');
+      setMessages([...next, { role: 'assistant', content: data.reply }]);
+    }
     else setMessages([...next, { role: 'assistant', content: `Error: ${data.error ?? 'request failed'}` }]);
   }
 
   return (
     <div className="card flex flex-col h-[60vh]">
+      <div className="px-4 py-2 border-b text-xs text-slate-500 flex items-center justify-between">
+        <span>Project Assistant</span>
+        <span className={`badge ${mode === 'openai' ? 'badge-green' : 'badge-amber'}`}>
+          {mode === 'openai' ? 'AI mode' : 'Mock mode'}
+        </span>
+      </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.map((m, i) => (
           <div key={i} className={`max-w-[80%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap ${m.role === 'user' ? 'ml-auto bg-brand-navy text-white' : 'bg-brand-cream text-brand-ink'}`}>

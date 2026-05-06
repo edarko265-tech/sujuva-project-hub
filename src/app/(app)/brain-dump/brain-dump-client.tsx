@@ -1,10 +1,13 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ClientTime } from '@/components/ClientTime';
+import { VoiceRecorder } from '@/components/VoiceRecorder';
 
 interface Project { id: string; name: string; phases: Array<{ id: string; name: string; order: number }> }
 interface Dump {
   id: string; rawText: string; proposedTitle: string | null; proposedDescription: string | null;
+  proposedPhaseId?: string | null;
   status: string; createdAt: string; project?: { id: string; name: string } | null;
 }
 
@@ -30,7 +33,11 @@ export function BrainDumpClient({ projects, dumps }: { projects: Project[]; dump
   async function accept(d: Dump) {
     const project = projects.find((p) => p.id === d.project?.id) ?? projects[0];
     if (!project) { alert('Create a project first.'); return; }
-    const phaseId = prompt(`Add to which phase id?\n${project.phases.map((p) => `${p.order + 1}. ${p.name} → ${p.id}`).join('\n')}`);
+    const suggested = d.proposedPhaseId && project.phases.some((p) => p.id === d.proposedPhaseId) ? d.proposedPhaseId : project.phases[0]?.id;
+    const phaseId = prompt(
+      `Add to which phase id?\n${project.phases.map((p) => `${p.order + 1}. ${p.name} → ${p.id}`).join('\n')}`,
+      suggested,
+    );
     if (!phaseId) return;
     const res = await fetch('/api/brain-dump', {
       method: 'PATCH',
@@ -40,12 +47,21 @@ export function BrainDumpClient({ projects, dumps }: { projects: Project[]; dump
     if (res.ok) router.refresh(); else alert('Failed');
   }
 
+  async function refine(d: Dump) {
+    const res = await fetch(`/api/brain-dump/${d.id}/refine`, { method: 'POST' });
+    if (res.ok) router.refresh(); else alert('Refine failed');
+  }
+
   return (
     <div className="space-y-6">
       <div className="card p-6 space-y-3">
         <p className="text-sm text-slate-500">Capture a raw idea. We will turn it into a proposed feature you can review.</p>
         <textarea className="input min-h-[140px]" placeholder="Type your idea, problem, or quick note…"
           value={text} onChange={(e) => setText(e.target.value)} />
+        <VoiceRecorder
+          onTranscript={(t) => setText((prev) => (prev ? `${prev.trimEnd()}\n${t}` : t))}
+          disabled={busy}
+        />
         <div className="flex flex-wrap gap-3 items-end">
           <div className="flex-1 min-w-[220px]">
             <label className="label">Related project (optional)</label>
@@ -67,13 +83,16 @@ export function BrainDumpClient({ projects, dumps }: { projects: Project[]; dump
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-medium text-brand-ink">{d.proposedTitle ?? '(untitled)'}</div>
-                  <div className="text-xs text-slate-500">{new Date(d.createdAt).toLocaleString()} · {d.project?.name ?? 'Unassigned'}</div>
+                  <div className="text-xs text-slate-500"><ClientTime iso={d.createdAt} /> · {d.project?.name ?? 'Unassigned'}</div>
                 </div>
                 <span className={`badge ${d.status === 'ACCEPTED' ? 'badge-green' : d.status === 'REJECTED' ? 'badge-red' : 'badge-amber'}`}>{d.status}</span>
               </div>
               <p className="text-sm text-slate-600">{d.proposedDescription ?? d.rawText}</p>
               {d.status === 'PROPOSED' && (
-                <button onClick={() => accept(d)} className="btn-gold">Accept as feature</button>
+                <div className="flex gap-2">
+                  <button onClick={() => refine(d)} className="btn-ghost">Refine with AI</button>
+                  <button onClick={() => accept(d)} className="btn-gold">Accept as feature</button>
+                </div>
               )}
             </li>
           ))}

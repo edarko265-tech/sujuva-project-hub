@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useActivityStream, type StreamedActivity } from '@/hooks/useActivityStream';
+import { ClientTime } from './ClientTime';
 
 export interface InitialActivity {
   id: string;
@@ -58,7 +59,7 @@ export function RecentActivityFeed({ initial, max = 8 }: { initial: InitialActiv
           <div key={a.id} className="p-3 text-sm">
             <div className="text-slate-700">{a.message}</div>
             <div className="text-xs text-slate-400 mt-0.5">
-              {a.actorName ?? 'system'} · {new Date(a.createdAt).toLocaleString()}
+              {a.actorName ?? 'system'} · <ClientTime iso={a.createdAt} />
             </div>
           </div>
         ))}

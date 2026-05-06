@@ -4,8 +4,15 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@sujuva.local';
+  const isProd = process.env.NODE_ENV === 'production';
+  // Production deployments default to the real system admin; local/dev keeps
+  // the legacy seed admin unless overridden.
+  const adminEmail =
+    process.env.SEED_ADMIN_EMAIL ?? (isProd ? 'eric.darko@sujuva.pro' : 'admin@sujuva.local');
   const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'admin123';
+  const adminName = process.env.SEED_ADMIN_NAME ?? (isProd ? 'Eric Darko' : 'Hub Admin');
+  // Skip the demo .local users in production (or whenever SEED_DEMO_USERS=false).
+  const includeDemo = (process.env.SEED_DEMO_USERS ?? (isProd ? 'false' : 'true')) !== 'false';
 
   // Users
   const admin = await prisma.user.upsert({
@@ -13,11 +20,16 @@ async function main() {
     update: {},
     create: {
       email: adminEmail,
-      name: 'Hub Admin',
+      name: adminName,
       passwordHash: await bcrypt.hash(adminPassword, 10),
       role: 'ADMIN',
     },
   });
+
+  if (!includeDemo) {
+    console.log(`Seeded production admin: ${adminEmail}. Skipping demo users + sample project.`);
+    return;
+  }
 
   const manager = await prisma.user.upsert({
     where: { email: 'manager@sujuva.local' },
