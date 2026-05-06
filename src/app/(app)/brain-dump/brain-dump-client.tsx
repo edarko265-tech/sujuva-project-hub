@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ClientTime } from '@/components/ClientTime';
+import { VoiceRecorder } from '@/components/VoiceRecorder';
 
 interface Project { id: string; name: string; phases: Array<{ id: string; name: string; order: number }> }
 interface Dump {
@@ -56,6 +58,10 @@ export function BrainDumpClient({ projects, dumps }: { projects: Project[]; dump
         <p className="text-sm text-slate-500">Capture a raw idea. We will turn it into a proposed feature you can review.</p>
         <textarea className="input min-h-[140px]" placeholder="Type your idea, problem, or quick note…"
           value={text} onChange={(e) => setText(e.target.value)} />
+        <VoiceRecorder
+          onTranscript={(t) => setText((prev) => (prev ? `${prev.trimEnd()}\n${t}` : t))}
+          disabled={busy}
+        />
         <div className="flex flex-wrap gap-3 items-end">
           <div className="flex-1 min-w-[220px]">
             <label className="label">Related project (optional)</label>
@@ -77,7 +83,7 @@ export function BrainDumpClient({ projects, dumps }: { projects: Project[]; dump
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-medium text-brand-ink">{d.proposedTitle ?? '(untitled)'}</div>
-                  <div className="text-xs text-slate-500">{new Date(d.createdAt).toLocaleString()} · {d.project?.name ?? 'Unassigned'}</div>
+                  <div className="text-xs text-slate-500"><ClientTime iso={d.createdAt} /> · {d.project?.name ?? 'Unassigned'}</div>
                 </div>
                 <span className={`badge ${d.status === 'ACCEPTED' ? 'badge-green' : d.status === 'REJECTED' ? 'badge-red' : 'badge-amber'}`}>{d.status}</span>
               </div>

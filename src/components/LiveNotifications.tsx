@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useActivityStream } from '@/hooks/useActivityStream';
+import { ClientTime } from './ClientTime';
 
 export function LiveNotifications() {
   const [open, setOpen] = useState(false);
@@ -45,7 +46,7 @@ export function LiveNotifications() {
               <div key={n.id} className="p-3 text-sm">
                 <div className="text-slate-700">{n.message}</div>
                 <div className="text-xs text-slate-400 mt-1">
-                  {n.actorName ?? 'system'} · {new Date(n.createdAt).toLocaleTimeString()}
+                  {n.actorName ?? 'system'} · <ClientTime iso={n.createdAt} mode="time" />
                 </div>
               </div>
             ))}
