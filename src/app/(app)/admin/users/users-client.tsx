@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface User {
@@ -19,6 +19,11 @@ export function UsersClient({ users, projects }: { users: User[]; projects: Proj
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ email: '', name: '', password: '', role: 'CONTRIBUTOR' });
   const [selectedUserId, setSelectedUserId] = useState(users[0]?.id ?? '');
+  const [policy, setPolicy] = useState<{ allowedEmailDomains: string[]; allowLocalInDev: boolean } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/policy').then((r) => r.json()).then(setPolicy).catch(() => setPolicy(null));
+  }, []);
 
   async function create() {
     const res = await fetch('/api/users', {
@@ -76,16 +81,24 @@ export function UsersClient({ users, projects }: { users: User[]; projects: Proj
     <div className="space-y-4">
       <div>
         {creating ? (
-          <div className="card p-4 grid md:grid-cols-5 gap-2">
-            <input className="input" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            <input className="input" placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            <input className="input" placeholder="Password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-            <select className="input" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-              {ROLES.map((r) => <option key={r}>{r}</option>)}
-            </select>
-            <div className="flex gap-2">
-              <button onClick={create} className="btn-primary">Create</button>
-              <button onClick={() => setCreating(false)} className="btn-ghost">Cancel</button>
+          <div className="card p-4 space-y-2">
+            {policy && (
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Approved domains: <span className="font-mono">{policy.allowedEmailDomains.join(', ')}</span>
+                {policy.allowLocalInDev && <span> (and <span className="font-mono">*.local</span> in dev)</span>}
+              </p>
+            )}
+            <div className="grid md:grid-cols-5 gap-2">
+              <input className="input" placeholder="name@sujuva.pro" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <input className="input" placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <input className="input" placeholder="Password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+              <select className="input" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+                {ROLES.map((r) => <option key={r}>{r}</option>)}
+              </select>
+              <div className="flex gap-2">
+                <button onClick={create} className="btn-primary">Create</button>
+                <button onClick={() => setCreating(false)} className="btn-ghost">Cancel</button>
+              </div>
             </div>
           </div>
         ) : (

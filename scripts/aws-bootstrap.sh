@@ -65,6 +65,7 @@ fi
 log "6/8 .env (placeholders if missing) + npm ci + prisma + build"
 if [[ ! -f "$APP_DIR/.env" ]]; then
   SECRET="$(openssl rand -base64 48 | tr -d '\n')"
+  ADMIN_PW="$(openssl rand -base64 18 | tr -d '\n=' | head -c 22)"
   sudo -u "$APP_USER" tee "$APP_DIR/.env" >/dev/null <<EOF
 DATABASE_URL="file:./prisma/prod.db"
 SESSION_SECRET="$SECRET"
@@ -73,14 +74,18 @@ OPENAI_MODEL="gpt-4o-mini"
 OPENAI_TRANSCRIBE_MODEL="whisper-1"
 TELEGRAM_BOT_TOKEN=""
 TELEGRAM_WEBHOOK_SECRET=""
-SEED_ADMIN_EMAIL="admin@sujuva.local"
-SEED_ADMIN_PASSWORD="admin123"
+ALLOWED_EMAIL_DOMAINS="sujuva.pro,all-rounders.fi"
+SEED_ADMIN_EMAIL="eric.darko@sujuva.pro"
+SEED_ADMIN_NAME="Eric Darko"
+SEED_ADMIN_PASSWORD="$ADMIN_PW"
+SEED_DEMO_USERS="false"
 NODE_ENV=production
 PORT=3000
 EOF
   sudo chmod 600 "$APP_DIR/.env"
   echo "  ⚠️  /srv/sujuva-project-hub/.env created with placeholders."
-  echo "      Edit it and set OPENAI_API_KEY before/after first start."
+  echo "      Initial admin login: eric.darko@sujuva.pro / $ADMIN_PW"
+  echo "      Set OPENAI_API_KEY in .env, then restart sujuva."
 fi
 sudo -u "$APP_USER" bash -lc "
   set -e

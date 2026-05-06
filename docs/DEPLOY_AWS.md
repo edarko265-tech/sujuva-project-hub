@@ -114,6 +114,11 @@ SESSION_SECRET="<run: openssl rand -base64 48>"
 OPENAI_API_KEY="sk-proj-…"
 OPENAI_MODEL="gpt-4o-mini"
 OPENAI_TRANSCRIBE_MODEL="whisper-1"
+ALLOWED_EMAIL_DOMAINS="sujuva.pro,all-rounders.fi"
+SEED_ADMIN_EMAIL="eric.darko@sujuva.pro"
+SEED_ADMIN_NAME="Eric Darko"
+SEED_ADMIN_PASSWORD="<random; printed by bootstrap>"
+SEED_DEMO_USERS="false"
 TELEGRAM_BOT_TOKEN=""           # optional
 TELEGRAM_WEBHOOK_SECRET=""      # optional
 NODE_ENV=production
@@ -140,9 +145,15 @@ sudo journalctl -u sujuva -n 50 --no-pager
 curl -I https://projects.ericdarko.com/login     # 200, valid cert
 ```
 
-Open `https://projects.ericdarko.com` in a browser → log in with the
-seeded admin (`admin@sujuva.local` / `admin123`) → **change the password
-immediately**.
+Open `https://projects.ericdarko.com` in a browser → log in as
+`eric.darko@sujuva.pro` with the random password printed by the bootstrap
+script (also stored in `/srv/sujuva-project-hub/.env` as
+`SEED_ADMIN_PASSWORD`). **Change the password immediately** from
+Admin → Users → Reset password.
+
+> Only emails from `sujuva.pro` or `all-rounders.fi` can be created from
+> Admin → Users in production. Adjust the list via
+> `ALLOWED_EMAIL_DOMAINS` if you onboard another company.
 
 ---
 
