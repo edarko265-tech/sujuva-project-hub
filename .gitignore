@@ -33,3 +33,7 @@ Thumbs.db
 !.vscode/settings.json
 
 tsconfig.tsbuildinfo
+
+# SSH keys
+*.pem
+*.key
