@@ -76,7 +76,7 @@ When the user describes an idea, ask which project it belongs to and propose a c
 
 function mockReply(input: string, ctx: ChatContext): string {
   const trimmed = input.trim();
-  if (!trimmed) return `Hi ${ctx.userName}! I am the Project Hub assistant (mock mode). Ask me about your projects or share an idea.`;
+  if (!trimmed) return `Hi ${ctx.userName}! How can I help with your projects today?`;
   if (/list|projects|what.*work/i.test(trimmed)) {
     if (ctx.accessibleProjects.length === 0) return 'You currently have no projects assigned.';
     return 'Your projects:\n' + ctx.accessibleProjects.map((p) => `• ${p.name} — ${p.completion}% (${p.currentPhase})`).join('\n');
@@ -84,7 +84,7 @@ function mockReply(input: string, ctx: ChatContext): string {
   if (/idea|brain.?dump|propose|new task|new feature/i.test(trimmed)) {
     return `Got it. I would propose a new feature titled "${summarise(trimmed)}". Which project should it go under?`;
   }
-  return `Mock assistant: I heard "${summarise(trimmed)}". (Configure OPENAI_API_KEY for real responses.)`;
+  return `I heard: "${summarise(trimmed)}". (The AI service is temporarily unavailable — please try again in a moment.)`;
 }
 
 function summarise(text: string) {

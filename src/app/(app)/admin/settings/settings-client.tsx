@@ -340,18 +340,17 @@ function IntegrationsTab({ data }: { data: SettingsData['integrations'] }) {
       <SectionHeader title="Integrations" description="External services connected to this workspace." />
 
       <IntegrationCard
-        title="OpenAI / ChatGPT"
+        title="AI assistant"
         subtitle="Powers the assistant, brain-dump refinement and voice transcription."
         ok={data.openai}
         okLabel="Connected"
-        notOkLabel="API key missing"
+        notOkLabel="Not configured"
       >
-        <FieldRow label="API key">
-          <CopyKey value="OPENAI_API_KEY" />
+        <FieldRow label="Status">
+          <StatusPill ok={data.openai} yes="API key set" no="No API key" />
         </FieldRow>
         <FieldRow label="Model">
           <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-800">{data.openaiModel}</code>
-          <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">Override with <CopyKey value="OPENAI_MODEL" /></span>
         </FieldRow>
       </IntegrationCard>
 

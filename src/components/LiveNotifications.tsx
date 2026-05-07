@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useActivityStream } from '@/hooks/useActivityStream';
+import { useOnClickOutside } from '@/hooks/useOnClickOutside';
 import { ClientTime } from './ClientTime';
 
 export function LiveNotifications() {
@@ -9,11 +10,14 @@ export function LiveNotifications() {
   const [seen, setSeen] = useState(0);
   const { events, connected } = useActivityStream({ bufferSize: 20 });
 
+  const close = useCallback(() => setOpen(false), []);
+  const ref = useOnClickOutside<HTMLDivElement>(open, close);
+
   const unread = Math.max(0, events.length - seen);
   const visible = useMemo(() => events.slice(0, 8), [events]);
 
   return (
-    <div className="relative">
+    <div className="relative" ref={ref}>
       <button
         type="button"
         onClick={() => {
@@ -23,24 +27,26 @@ export function LiveNotifications() {
         }}
         className="btn-ghost relative"
         title={connected ? 'Live notifications connected' : 'Notifications reconnecting'}
+        aria-haspopup="true"
+        aria-expanded={open}
       >
         🔔
         {unread > 0 && (
-          <span className="absolute -top-1 -right-1 inline-flex min-w-[18px] justify-center rounded-full bg-red-500 px-1 text-[10px] text-white">
+          <span className="absolute -top-1 -right-1 inline-flex min-w-[18px] justify-center rounded-full bg-red-500 px-1 text-[10px] text-white animate-pop">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-[320px] max-h-[420px] overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl z-50 dark:bg-slate-900 dark:border-slate-700">
+        <div className="absolute right-0 mt-2 w-[320px] max-h-[420px] overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl z-50 dark:bg-slate-900 dark:border-slate-700 animate-slide-down origin-top-right">
           <div className="px-3 py-2 border-b flex items-center justify-between dark:border-slate-700">
             <div className="text-sm font-semibold dark:text-slate-100">Live notifications</div>
             <span className={`text-[10px] uppercase ${connected ? 'text-green-600 dark:text-green-400' : 'text-slate-400'}`}>
               {connected ? 'Live' : 'Offline'}
             </span>
           </div>
-          <div className="divide-y dark:divide-slate-800">
+          <div className="divide-y dark:divide-slate-800 stagger">
             {visible.length === 0 && <div className="p-3 text-sm text-slate-500 dark:text-slate-400">No new activity.</div>}
             {visible.map((n) => (
               <div key={n.id} className="p-3 text-sm">
