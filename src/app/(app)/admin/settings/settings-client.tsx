@@ -5,6 +5,7 @@ import {
   IconUser, IconBuilding, IconShield, IconPlug, IconServer,
   IconCheck, IconAlert, IconCopy, IconKey,
 } from '@/components/icons';
+import { PasswordInput } from '@/components/PasswordInput';
 
 export interface SettingsData {
   me: { id: string; email: string; name: string; role: string; createdAt: string };
@@ -224,16 +225,16 @@ function ProfileTab({ me }: { me: SettingsData['me'] }) {
         <div className="grid gap-3 max-w-md">
           <div>
             <label className="label">Current password</label>
-            <input type="password" className="input" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" />
+            <PasswordInput value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" placeholder="Enter your current password" />
           </div>
           <div>
             <label className="label">New password</label>
-            <input type="password" className="input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" />
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">At least 8 characters.</p>
+            <PasswordInput value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" placeholder="At least 8 characters" />
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Use at least 8 characters with a mix of letters, numbers and symbols.</p>
           </div>
           <div>
             <label className="label">Confirm new password</label>
-            <input type="password" className="input" value={newPassword2} onChange={(e) => setNewPassword2(e.target.value)} autoComplete="new-password" />
+            <PasswordInput value={newPassword2} onChange={(e) => setNewPassword2(e.target.value)} autoComplete="new-password" placeholder="Re-enter the new password" />
           </div>
           <div>
             <button className="btn-primary" onClick={changePassword} disabled={busy || !currentPassword || !newPassword}>

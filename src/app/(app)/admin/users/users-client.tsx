@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { PasswordInput } from '@/components/PasswordInput';
 
 interface User {
   id: string;
@@ -90,8 +91,8 @@ export function UsersClient({ users, projects }: { users: User[]; projects: Proj
             )}
             <div className="grid md:grid-cols-5 gap-2">
               <input className="input" placeholder="name@sujuva.pro" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-              <input className="input" placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              <input className="input" placeholder="Password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+              <input className="input" placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <PasswordInput placeholder="Temporary password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
               <select className="input" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
                 {ROLES.map((r) => <option key={r}>{r}</option>)}
               </select>
